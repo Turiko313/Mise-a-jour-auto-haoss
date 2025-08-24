@@ -29,12 +29,12 @@ class SmartUpdaterSensor(SensorEntity):
         self._attr_unique_id = f"{DOMAIN}_updates"
         self._attr_icon = "mdi:update"
         self._state = 0
-        self._attributes = {"updates": []}
+        self._attributes = {"updates": [], "history": []}
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self._state
+        return self.state
 
     @property
     def extra_state_attributes(self):
@@ -87,3 +87,4 @@ class SmartUpdaterSensor(SensorEntity):
 
         self._state = len(updates_list)
         self._attributes["updates"] = updates_list
+        self._attributes["history"] = self.hass.data[DOMAIN].get("history", [])

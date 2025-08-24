@@ -8,8 +8,9 @@ Smart Updater is a custom integration for Home Assistant that helps you manage y
 
 -   **Update Sensor:** A sensor that shows the number of available updates.
 -   **Update Service:** A service to update selected components.
--   **Lovelace Card:** A custom card to view and manage updates from your dashboard.
+-   **Lovelace Card:** A custom card to view and manage updates from your dashboard. It also displays a history of the latest updates.
 -   **Scheduled Auto-updates:** Configure automatic updates for your components at a time of your choosing.
+-   **Automatic Restart:** Optionally, the integration can automatically restart Home Assistant after an update, with a 1-minute delay.
 
 ## Installation
 
@@ -38,6 +39,7 @@ You can configure the integration from the options menu of the integration's ent
 
 -   **Auto-update time:** Set the time of day when the automatic updates should run.
 -   **Auto-update entities:** Select the components you want to update automatically.
+-   **Auto-restart:** Enable this option to automatically restart Home Assistant after an update. The restart will be performed with a 1-minute delay.
 
 ## Usage
 
@@ -50,7 +52,7 @@ type: custom:smart-updater-card
 entity: sensor.smart_updater
 ```
 
-The card will display a list of available updates. You can select the ones you want to update and click the "Update Selected" button.
+The card will display a list of available updates and a history of the latest updates. You can select the updates you want to install and click the "Update Selected" button.
 
 ### Service
 

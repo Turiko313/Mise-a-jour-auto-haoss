@@ -38,6 +38,7 @@ class SmartUpdaterCard extends LitElement {
     }
 
     const updates = state.attributes.updates || [];
+    const history = state.attributes.history || [];
 
     return html`
       <ha-card header="Smart Updater">
@@ -56,6 +57,13 @@ class SmartUpdaterCard extends LitElement {
               </div>
             `
           : ""}
+
+        <div class="card-content">
+          <h3>Update History</h3>
+          ${history.length > 0
+            ? this._renderHistory(history)
+            : html`<p>No update history.</p>`}
+        </div>
       </ha-card>
     `;
   }
@@ -93,6 +101,33 @@ class SmartUpdaterCard extends LitElement {
     `;
   }
 
+  _renderHistory(history) {
+    return html`
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${history.map(
+            (item) => html`
+              <tr>
+                <td>${item.name}</td>
+                <td>${item.old_version}</td>
+                <td>${item.new_version}</td>
+                <td>${new Date(item.timestamp).toLocaleString()}</td>
+              </tr>
+            `
+          )}
+        </tbody>
+      </table>
+    `;
+  }
+
   _handleCheckboxChange(e) {
     const entity_id = e.target.value;
     if (e.target.checked) {
@@ -116,7 +151,8 @@ class SmartUpdaterCard extends LitElement {
       return 1;
     }
     const updates = state.attributes.updates || [];
-    return updates.length + 2; // +1 for header, +1 for button
+    const history = state.attributes.history || [];
+    return updates.length + history.length + 3; // +1 for each header, +1 for button
   }
 
   static get styles() {
