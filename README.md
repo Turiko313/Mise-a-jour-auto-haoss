@@ -13,10 +13,24 @@ Smart Updater is a custom integration for Home Assistant that helps you manage y
 
 ## Installation
 
+### Manual Installation
+
 1.  Copy the `smart_updater` directory from this repository into your Home Assistant's `custom_components` directory.
 2.  Restart Home Assistant.
 3.  Go to **Settings > Devices & Services > Add Integration** and search for **Smart Updater**.
 4.  Click on the integration to add it.
+
+### HACS Installation
+
+1.  Go to your HACS page in Home Assistant.
+2.  Click on the 3 dots in the top right corner and select "Custom repositories".
+3.  In the "Repository" field, paste the URL of this repository.
+4.  In the "Category" field, select "Integration".
+5.  Click "Add".
+6.  You should now see the "Smart Updater" integration in your HACS list. Click on it and then click "Install".
+7.  Restart Home Assistant.
+8.  Go to **Settings > Devices & Services > Add Integration** and search for **Smart Updater**.
+9.  Click on the integration to add it.
 
 ## Configuration
 
