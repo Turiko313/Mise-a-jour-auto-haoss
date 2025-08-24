@@ -1,11 +1,14 @@
 """The Smart Updater integration."""
 from __future__ import annotations
 
+import asyncio
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import async_track_time_change
+from homeassistant.helpers.storage import Store
+from homeassistant.util.dt import now as dt_now
 
 from .const import DOMAIN
 
@@ -25,6 +28,11 @@ async def options_update_listener(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Smart Updater from a config entry."""
+    store = Store(hass, 1, f"{DOMAIN}_history")
+    history = await store.async_load() or []
+
+    hass.data[DOMAIN] = {"history": history}
+
     hass.http.register_static_path(
         f"/hacsfiles/{DOMAIN}/smart-updater-card.js",
         hass.config.path(f"custom_components/{DOMAIN}/www/smart-updater-card.js"),
@@ -43,18 +51,47 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     }
                 )
 
+    async def perform_update(entity_id: str):
+        """Perform an update for a single entity and record it."""
+        state_before = hass.states.get(entity_id)
+        if not state_before:
+            return
+
+        old_version = state_before.attributes.get("installed_version", "N/A")
+
+        await hass.services.async_call(
+            "update",
+            "install",
+            {"entity_id": entity_id},
+            blocking=True,
+        )
+
+        state_after = hass.states.get(entity_id)
+        if not state_after:
+            return
+
+        new_version = state_after.attributes.get("installed_version", "N/A")
+
+        # Only record if the version changed
+        if old_version != new_version:
+            history.insert(0, {
+                "name": state_after.name,
+                "old_version": old_version,
+                "new_version": new_version,
+                "timestamp": dt_now().isoformat(),
+            })
+            # Keep history at a reasonable size
+            while len(history) > 100:
+                history.pop()
+            await store.async_save(history)
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     async def handle_update_selected(call):
         """Handle the update_selected service call."""
         entity_ids = call.data["entity_id"]
         for entity_id in entity_ids:
-            await hass.services.async_call(
-                "update",
-                "install",
-                {"entity_id": entity_id},
-                blocking=True,
-            )
+            await perform_update(entity_id)
 
     hass.services.async_register(
         DOMAIN, SERVICE_UPDATE_SELECTED, handle_update_selected, schema=SERVICE_SCHEMA
@@ -68,7 +105,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if not auto_update_entities:
             return
 
-        # We only want to update the ones that actually have an update available.
         sensor_state = hass.states.get(f"sensor.{DOMAIN}_updates")
         if not sensor_state:
             return
@@ -84,12 +120,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if not entities_to_update:
             return
 
-        await hass.services.async_call(
-            DOMAIN,
-            SERVICE_UPDATE_SELECTED,
-            {"entity_id": entities_to_update},
-            blocking=True,
-        )
+        for entity_id in entities_to_update:
+            await perform_update(entity_id)
+
+        if entry.options.get("auto_restart", False):
+            await asyncio.sleep(60)
+            await hass.services.async_call("homeassistant", "restart")
 
     time_str = entry.options.get("auto_update_time", "03:00:00")
     hour, minute, second = map(int, time_str.split(":"))

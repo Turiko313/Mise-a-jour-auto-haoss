@@ -38,6 +38,10 @@ class SmartUpdaterOptionsFlowHandler(config_entries.OptionsFlow):
                             multiple=True,
                         ),
                     ),
+                    vol.Optional(
+                        "auto_restart",
+                        default=self.config_entry.options.get("auto_restart", False),
+                    ): bool,
                 }
             ),
         )
