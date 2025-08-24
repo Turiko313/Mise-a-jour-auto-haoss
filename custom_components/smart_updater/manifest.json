@@ -1,0 +1,11 @@
+{
+  "domain": "smart_updater",
+  "name": "Smart Updater",
+  "version": "0.0.1",
+  "documentation": "https://github.com/jules-agent/home-assistant-smart-updater",
+  "issue_tracker": "https://github.com/jules-agent/home-assistant-smart-updater/issues",
+  "config_flow": true,
+  "logo": "logo.svg",
+  "codeowners": ["@jules-agent"],
+  "iot_class": "local_polling"
+}
