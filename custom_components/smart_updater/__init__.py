@@ -33,7 +33,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data[DOMAIN] = {"history": history}
 
-    hass.http.register_static_path(
+    hass.http.async_register_static_path(
         f"/hacsfiles/{DOMAIN}/smart-updater-card.js",
         hass.config.path(f"custom_components/{DOMAIN}/www/smart-updater-card.js"),
     )
